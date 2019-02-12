@@ -1,4 +1,4 @@
 package fr.isima.yk.container;
 
-public class MovieFinder {
+public abstract class MovieFinder {
 }

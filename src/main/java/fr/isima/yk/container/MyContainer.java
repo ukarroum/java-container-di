@@ -9,9 +9,55 @@ import javax.inject.*;
 
 public class MyContainer {
     private Map<Class, Class> binds = new HashMap<>();
+    private Map<Class, Boolean> isSing = new HashMap<>();
+    private Map<Class, Object> singletons = new HashMap<>();
+
 
     public void bind(Class c1, Class c2) {
         binds.put(c1, c2);
+        isSing.put(c1, false);
+    }
+
+    public void bind(Class c1, Class c2, boolean isSingleton) {
+        binds.put(c1, c2);
+        isSing.put(c1, isSingleton);
+    }
+
+    private Object getBindInstance(Class c) {
+
+        Object o = null;
+
+        if(!isSing.get(c)) {
+            try {
+                o = binds.get(c).newInstance();
+            }
+            catch(InstantiationException e) {
+                System.out.println("Erreur");
+            }
+            catch(IllegalAccessException e) {
+                System.out.println("Erreur");
+            }
+        }
+        else {
+            if(singletons.get(c) != null)
+                o = singletons.get(c);
+            else
+            {
+                try {
+                    singletons.put(c, binds.get(c).newInstance());
+                }
+                catch(InstantiationException e) {
+                    System.out.println("Erreur");
+                }
+                catch(IllegalAccessException e) {
+                    System.out.println("Erreur");
+                }
+
+                o = singletons.get(c);
+            }
+        }
+
+        return o;
     }
 
     public <T> T newInstance(Class c) {
@@ -23,34 +69,34 @@ public class MyContainer {
 
         for(int i = 0; i < constructors.length; i++)
         {
-            if(constructors[i].isAnnotationPresent(Inject.class))
+            if(constructors[i].isAnnotationPresent(MyInject.class))
             {
                 cons = constructors[i];
                 break;
             }
         }
 
-        Class[] parameterTypes = cons.getParameterTypes();
+        Class[] parameterTypes = {};
+
+        /* Check if we have a constructor annoted with Inject */
+        if(cons != null) {
+            parameterTypes = cons.getParameterTypes();
+        }
 
         List<Object> args = new ArrayList<>();
 
         for(int i = 0; i < parameterTypes.length; i++)
         {
-            try{
-                args.add(binds.get(parameterTypes[i]).newInstance());
-            }
-            catch(InstantiationException e) {
-                System.out.println("Erreur");
-            }
-            catch(IllegalAccessException e) {
-                System.out.println("Erreur");
-            }
+            args.add(getBindInstance(parameterTypes[i]));
         }
 
         T inst = null;
 
         try{
-            inst = (T)cons.newInstance(args.toArray());
+            if(cons != null)
+                inst = (T)cons.newInstance(args.toArray());
+            else
+                inst = (T)c.getConstructor().newInstance();
         }
         catch(InstantiationException e) {
             System.out.println("Erreur");
@@ -61,18 +107,19 @@ public class MyContainer {
         catch(InvocationTargetException e) {
             System.out.println("Erreur");
         }
+        catch(NoSuchMethodException e) {
+            System.out.println("Erreur");
+        }
+
 
         /* Setters Injection */
 
         Method[] methods = c.getMethods();
 
         for(Method method : methods) {
-            if(method.getName().startsWith("set") && method.isAnnotationPresent(Inject.class)) {
+            if(method.getName().startsWith("set") && method.isAnnotationPresent(MyInject.class)) {
                 try {
-                    method.invoke(inst, binds.get(method.getParameterTypes()[0]).newInstance());
-                }
-                catch(InstantiationException e) {
-                    System.out.println("Erreur");
+                    method.invoke(inst, getBindInstance(method.getParameterTypes()[0]));
                 }
                 catch(IllegalAccessException e) {
                     System.out.println("Erreur");
@@ -88,22 +135,16 @@ public class MyContainer {
         Field[] fields = c.getDeclaredFields();
 
         for(Field field: fields) {
-            if(field.isAnnotationPresent(Inject.class)) {
+            if(field.isAnnotationPresent(MyInject.class)) {
                 try {
                     field.setAccessible(true);
-                    field.set(inst, binds.get(field.getClass()).newInstance());
-
-                }
-                catch(InstantiationException e) {
-                    System.out.println("Erreur");
+                    field.set(inst, getBindInstance(field.getType()));
                 }
                 catch(IllegalAccessException e) {
                     System.out.println("Erreur");
                 }
             }
         }
-
         return inst;
     }
-
 }
