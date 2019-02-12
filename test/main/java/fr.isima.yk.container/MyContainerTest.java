@@ -72,8 +72,19 @@ public class MyContainerTest {
         injector.bind(AuditService.class, SimpleAuditService.class);
         injector.bind(AuditService.class, String.class);
 
-        MovieLister2 finder = injector.newInstance(MovieLister2.class);
-        MovieLister2 finder2 = injector.newInstance(MovieLister2.class);
+        MovieLister4 finder = injector.newInstance(MovieLister4.class);
+
+        assertTrue(finder.getAuditService() instanceof SimpleAuditService);
+    }
+
+    @Test
+    @DisplayName("Autowiring")
+    void testAutoWiring() {
+        injector.bind(AuditService.class, SimpleAuditService.class);
+
+        injector.setAutoWiring(AuditService.class);
+
+        MovieLister5 finder = injector.newInstance(MovieLister5.class);
 
         assertTrue(finder.getAuditService() instanceof SimpleAuditService);
     }

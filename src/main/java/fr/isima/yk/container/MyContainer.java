@@ -14,7 +14,7 @@ public class MyContainer {
     private Multimap<Class, Class> binds = HashMultimap.create();
     private Map<Class, Boolean> isSing = new HashMap<>();
     private Map<Class, Object> singletons = new HashMap<>();
-
+    private HashSet<Class> autoWired = new HashSet<Class>();
 
     public void bind(Class c1, Class c2) {
         binds.put(c1, c2);
@@ -24,6 +24,10 @@ public class MyContainer {
     public void bind(Class c1, Class c2, boolean isSingleton) {
         binds.put(c1, c2);
         isSing.put(c2, isSingleton);
+    }
+
+    public void setAutoWiring(Class c) {
+        autoWired.add(c);
     }
 
     private Object getBindInstance(Class c, Class c2) {
@@ -151,6 +155,24 @@ public class MyContainer {
                 }
             }
         }
+
+        /* Auto Wiring Injection */
+
+        for(Field field: fields) {
+            if(!field.isAnnotationPresent(MyInject.class)) {
+                if(autoWired.contains(field.getType()))
+                {
+                    try {
+                        field.setAccessible(true);
+                        field.set(inst, getBindInstance(field.getType(), Class.class));
+                    }
+                    catch(IllegalAccessException e) {
+                        System.out.println("Erreur");
+                    }
+                }
+            }
+        }
+
         return inst;
     }
 }
