@@ -17,7 +17,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Constructor injection : one level of dependencies")
+    @DisplayName("Constructor injection : US2/4")
     void testConsInjec() {
         injector.bind(AuditService.class, SimpleAuditService.class);
         injector.bind(MovieFinder.class, WebMovieFinder.class);
@@ -27,7 +27,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Setter injection : one level of dependencies")
+    @DisplayName("Setter injection : US1/4")
     void testSetInjec() {
         injector.bind(AuditService.class, SimpleAuditService.class);
 
@@ -36,7 +36,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Fields injection : one level of dependencies")
+    @DisplayName("Fields injection : US3/4")
     void testFieldInjec() {
         injector.bind(AuditService.class, SimpleAuditService.class);
 
@@ -45,7 +45,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Singleton Support : True")
+    @DisplayName("Singleton Support : True US5")
     void testSingSup() {
         injector.bind(AuditService.class, SimpleAuditService.class, true);
 
@@ -56,7 +56,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Singleton Support : False")
+    @DisplayName("Singleton Support : False US5")
     void testNonSing() {
         injector.bind(AuditService.class, SimpleAuditService.class, false);
 
@@ -67,7 +67,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Multiple Implementations")
+    @DisplayName("Multiple Implementations US6")
     void testMultImp() {
         injector.bind(AuditService.class, SimpleAuditService.class);
         injector.bind(AuditService.class, String.class);
@@ -78,7 +78,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Autowiring")
+    @DisplayName("Autowiring US7")
     void testAutoWiring() {
         injector.bind(AuditService.class, SimpleAuditService.class);
 
@@ -90,7 +90,7 @@ public class MyContainerTest {
     }
 
     @Test
-    @DisplayName("Graph Resolution")
+    @DisplayName("Graph Resolution US10")
     void testGraphResolution() {
         injector.bind(LogerService.class, SimpleLogerService.class);
         injector.bind(FileSystem.class, NTFSFileSystem.class);
