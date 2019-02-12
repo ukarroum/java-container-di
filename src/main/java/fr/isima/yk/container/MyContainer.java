@@ -38,32 +38,16 @@ public class MyContainer {
             c2 = binds.get(c).iterator().next();
 
         if(!isSing.get(c2)) {
-            try {
-                o = c2.newInstance();
-            }
-            catch(InstantiationException e) {
-                System.out.println("Erreur");
-            }
-            catch(IllegalAccessException e) {
-                System.out.println("Erreur");
-            }
+                o = newInstance(c2);
         }
         else {
             if(singletons.get(c2) != null)
                 o = singletons.get(c2);
             else
             {
-                try {
-                    singletons.put(c2, c2.newInstance());
-                }
-                catch(InstantiationException e) {
-                    System.out.println("Erreur");
-                }
-                catch(IllegalAccessException e) {
-                    System.out.println("Erreur");
-                }
+                o = newInstance(c2);
 
-                o = singletons.get(c2);
+                singletons.put(c2, o);
             }
         }
 

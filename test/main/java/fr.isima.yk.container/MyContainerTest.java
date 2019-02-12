@@ -88,4 +88,15 @@ public class MyContainerTest {
 
         assertTrue(finder.getAuditService() instanceof SimpleAuditService);
     }
+
+    @Test
+    @DisplayName("Graph Resolution")
+    void testGraphResolution() {
+        injector.bind(LogerService.class, SimpleLogerService.class);
+        injector.bind(FileSystem.class, NTFSFileSystem.class);
+
+        MovieLister6 finder = injector.newInstance(MovieLister6.class);
+
+        assertTrue(((SimpleLogerService)finder.getLoger()).getFileSystem() instanceof NTFSFileSystem);
+    }
 }
