@@ -65,4 +65,16 @@ public class MyContainerTest {
 
         assertTrue(finder.getAuditService() != finder2.getAuditService());
     }
+
+    @Test
+    @DisplayName("Multiple Implementations")
+    void testMultImp() {
+        injector.bind(AuditService.class, SimpleAuditService.class);
+        injector.bind(AuditService.class, String.class);
+
+        MovieLister2 finder = injector.newInstance(MovieLister2.class);
+        MovieLister2 finder2 = injector.newInstance(MovieLister2.class);
+
+        assertTrue(finder.getAuditService() instanceof SimpleAuditService);
+    }
 }

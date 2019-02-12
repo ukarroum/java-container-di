@@ -1,5 +1,8 @@
 package fr.isima.yk.container;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -8,28 +11,31 @@ import java.util.*;
 import javax.inject.*;
 
 public class MyContainer {
-    private Map<Class, Class> binds = new HashMap<>();
+    private Multimap<Class, Class> binds = HashMultimap.create();
     private Map<Class, Boolean> isSing = new HashMap<>();
     private Map<Class, Object> singletons = new HashMap<>();
 
 
     public void bind(Class c1, Class c2) {
         binds.put(c1, c2);
-        isSing.put(c1, false);
+        isSing.put(c2, false);
     }
 
     public void bind(Class c1, Class c2, boolean isSingleton) {
         binds.put(c1, c2);
-        isSing.put(c1, isSingleton);
+        isSing.put(c2, isSingleton);
     }
 
-    private Object getBindInstance(Class c) {
+    private Object getBindInstance(Class c, Class c2) {
 
         Object o = null;
 
-        if(!isSing.get(c)) {
+        if(c2 == Class.class)
+            c2 = binds.get(c).iterator().next();
+
+        if(!isSing.get(c2)) {
             try {
-                o = binds.get(c).newInstance();
+                o = c2.newInstance();
             }
             catch(InstantiationException e) {
                 System.out.println("Erreur");
@@ -39,12 +45,12 @@ public class MyContainer {
             }
         }
         else {
-            if(singletons.get(c) != null)
-                o = singletons.get(c);
+            if(singletons.get(c2) != null)
+                o = singletons.get(c2);
             else
             {
                 try {
-                    singletons.put(c, binds.get(c).newInstance());
+                    singletons.put(c2, c2.newInstance());
                 }
                 catch(InstantiationException e) {
                     System.out.println("Erreur");
@@ -53,7 +59,7 @@ public class MyContainer {
                     System.out.println("Erreur");
                 }
 
-                o = singletons.get(c);
+                o = singletons.get(c2);
             }
         }
 
@@ -69,7 +75,7 @@ public class MyContainer {
 
         for(int i = 0; i < constructors.length; i++)
         {
-            if(constructors[i].isAnnotationPresent(MyInject.class))
+            if(constructors[i].isAnnotationPresent(Inject.class))
             {
                 cons = constructors[i];
                 break;
@@ -87,7 +93,7 @@ public class MyContainer {
 
         for(int i = 0; i < parameterTypes.length; i++)
         {
-            args.add(getBindInstance(parameterTypes[i]));
+            args.add(getBindInstance(parameterTypes[i], Class.class));
         }
 
         T inst = null;
@@ -119,7 +125,7 @@ public class MyContainer {
         for(Method method : methods) {
             if(method.getName().startsWith("set") && method.isAnnotationPresent(MyInject.class)) {
                 try {
-                    method.invoke(inst, getBindInstance(method.getParameterTypes()[0]));
+                    method.invoke(inst, getBindInstance(method.getParameterTypes()[0], method.getAnnotation(MyInject.class).name()));
                 }
                 catch(IllegalAccessException e) {
                     System.out.println("Erreur");
@@ -138,7 +144,7 @@ public class MyContainer {
             if(field.isAnnotationPresent(MyInject.class)) {
                 try {
                     field.setAccessible(true);
-                    field.set(inst, getBindInstance(field.getType()));
+                    field.set(inst, getBindInstance(field.getType(), field.getAnnotation(MyInject.class).name()));
                 }
                 catch(IllegalAccessException e) {
                     System.out.println("Erreur");

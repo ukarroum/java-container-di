@@ -6,7 +6,7 @@ public class MovieLister {
     MovieFinder finder;
     AuditService audit;
 
-    @MyInject
+    @Inject
     public MovieLister(MovieFinder m_finder, AuditService m_audit) {
         finder = m_finder;
         audit = m_audit;
